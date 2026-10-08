@@ -96,6 +96,8 @@ def main():
     else:
         pub = run("git", "commit-tree", tree, "-m", msg, quiet=True)
     push(f"{pub}:refs/heads/main")
+    # the first branch pushed to a new repository becomes its default: make sure that is main
+    run("gh", "repo", "edit", REPO, "--default-branch", "main", check=False)
     run("git", "push", "origin", "--delete", "upload-tmp", check=False)
 
     # 3) GitHub Pages from the workflow in .github/workflows/pages.yml

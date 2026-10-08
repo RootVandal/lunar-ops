@@ -1,0 +1,136 @@
+# LUNAR//OPS data manifest.
+# Every file the pipeline uses, where it comes from and why.
+# Sizes and dates were checked with HTTP HEAD on 2026-10-08.
+# SHA-256 values are pinned on first download in data/manifest.lock.json.
+# range_only files are never downloaded whole: lunarops.dem reads the needed
+# tiles/rows with HTTP range requests and pins each range in data/tiles.lock.json
+# (decision D-018; the link here is ~50 KB/s, whole files would take hours).
+
+version: 1
+checked: 2026-10-08
+
+sets:
+  mvp: Minimum data to compute ephemerides, horizons and validation fixtures.
+  clones: NASA GSFC Monte Carlo DEM error realizations (large; fetched per site).
+  optional: Cross-checks that are useful but not required.
+
+files:
+  # --- SPICE kernels (NAIF generic kernels) ---------------------------------
+  - id: lsk
+    set: mvp
+    url: https://naif.jpl.nasa.gov/pub/naif/generic_kernels/lsk/naif0012.tls
+    dest: raw/kernels/naif0012.tls
+    size: 5257
+    role: UTC <-> TDB leap seconds
+  - id: spk_de440s
+    set: mvp
+    url: https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/planets/de440s.bsp
+    dest: raw/kernels/de440s.bsp
+    size: 32726016
+    role: Sun, Earth, Moon ephemerides 1849-2150 (decision D-001)
+  - id: pck_moon_pa
+    set: mvp
+    url: https://naif.jpl.nasa.gov/pub/naif/generic_kernels/pck/moon_pa_de440_200625.bpc
+    dest: raw/kernels/moon_pa_de440_200625.bpc
+    size: 12863488
+    role: Lunar principal-axes orientation from DE440, 1549-2650
+  - id: fk_moon
+    set: mvp
+    url: https://naif.jpl.nasa.gov/pub/naif/generic_kernels/fk/satellites/moon_de440_250416.tf
+    dest: raw/kernels/moon_de440_250416.tf
+    size: 19478
+    role: MOON_PA -> MOON_ME frame definitions
+  - id: pck_text
+    set: mvp
+    url: https://naif.jpl.nasa.gov/pub/naif/generic_kernels/pck/pck00011.tpc
+    dest: raw/kernels/pck00011.tpc
+    size: 131226
+    role: Body radii (Earth ellipsoid for DSN stations, Moon sphere)
+  - id: pck_earth
+    set: mvp
+    url: https://naif.jpl.nasa.gov/pub/naif/generic_kernels/pck/earth_1962_260806_2126_combined.bpc
+    dest: raw/kernels/earth_1962_260806_2126_combined.bpc
+    size: 31318016
+    role: Earth orientation (ITRF93) incl. long-term prediction
+  - id: spk_stations
+    set: mvp
+    url: https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/stations/earthstns_itrf93_260814.bsp
+    dest: raw/kernels/earthstns_itrf93_260814.bsp
+    size: 26624
+    role: DSN station positions (DSS-14, DSS-43, DSS-63)
+  - id: fk_stations
+    set: mvp
+    url: https://naif.jpl.nasa.gov/pub/naif/generic_kernels/fk/stations/earth_topo_260814.tf
+    dest: raw/kernels/earth_topo_260814.tf
+    size: 69400
+    role: DSN station topocentric frames
+
+  # --- Terrain: NASA GSFC PGDA product 90 (Barker et al. 2023) --------------
+  - id: dem_240m
+    set: mvp
+    range_only: true
+    url: https://pgda.gsfc.nasa.gov/data/LOLA_20mpp/LDEM_60S_240MPP_ADJ.TIF
+    dest: raw/dem/LDEM_60S_240MPP_ADJ.TIF
+    size: 218961039
+    role: Far-field horizon, 100-300 km (D-003, D-015)
+    frame: south polar stereographic, MOON_ME (DE421), meters
+  - id: dem_80m
+    set: mvp
+    range_only: true
+    url: https://pgda.gsfc.nasa.gov/data/LOLA_20mpp/LDEM_80S_80MPP_ADJ.TIF
+    dest: raw/dem/LDEM_80S_80MPP_ADJ.TIF
+    size: 189158392
+    role: Mid-field horizon, 5-100 km
+    frame: south polar stereographic, MOON_ME (DE421), meters
+  - id: dem_10m
+    set: mvp
+    url: https://pgda.gsfc.nasa.gov/data/LOLA_20mpp/LDEM_83S_10MPP_ADJ.TIF
+    dest: raw/dem/LDEM_83S_10MPP_ADJ.TIF
+    size: 5116709568
+    role: Near-field (0-5 km) for sites without a 5 m site DEM; read as windows via HTTP range, never downloaded whole
+    range_only: true
+
+  # --- Terrain: NASA GSFC PGDA product 78 (Barker et al. 2021), 5 m sites ---
+  - id: site01_surf
+    set: mvp
+    range_only: true
+    url: https://pgda.gsfc.nasa.gov/data/LOLA_5mpp/Site01/Site01_final_adj_5mpp_surf.tif
+    dest: raw/sites/Site01_final_adj_5mpp_surf.tif
+    size: 40980810
+    role: Near-field DEM, Connecting ridge
+  - id: site23_surf
+    set: mvp
+    range_only: true
+    url: https://pgda.gsfc.nasa.gov/data/LOLA_5mpp/Site23/Site23_final_adj_5mpp_surf.tif
+    dest: raw/sites/Site23_final_adj_5mpp_surf.tif
+    size: 70586804
+    role: Near-field DEM, Malapert massif
+
+  # --- Validation references -------------------------------------------------
+  - id: avgvisib_sun
+    set: mvp
+    range_only: true
+    url: https://pgda.gsfc.nasa.gov/data/MoonIllumination/AVGVISIB_85S_060M_201608.TIF
+    dest: raw/validation/AVGVISIB_85S_060M_201608.TIF
+    size: 33994464
+    role: Published average solar visibility (Mazarico et al. 2011, 2016 release); *_COG.TIF links 404 (D-016)
+  - id: avgvisib_earth
+    set: mvp
+    range_only: true
+    url: https://pgda.gsfc.nasa.gov/data/MoonIllumination/AVGVISIB_85S_060M_201608_EARTH.TIF
+    dest: raw/validation/AVGVISIB_85S_060M_201608_EARTH.TIF
+    size: 24862958
+    role: Published average Earth visibility ("any part of the disc visible")
+  - id: pds_ldem_80m
+    set: optional
+    url: https://pds-geosciences.wustl.edu/lro/lro-l-lola-3-rdr-v1/lrolol_1xxx/data/lola_gdr/polar/img/ldem_80s_80m.img
+    dest: raw/optional/ldem_80s_80m.img
+    size: 115520000
+    role: 2017 PDS DEM, cross-check against the 2023 adjusted DEM
+
+citations:
+  - Barker, M.K. et al. (2021) Planetary & Space Science 203, 105119. doi:10.1016/j.pss.2020.105119
+  - Barker, M.K. et al. (2023) Planetary Science Journal 4, 183. doi:10.3847/PSJ/acf3e1; data doi:10.60903/gsfcpgda-lola-spole
+  - Mazarico, E. et al. (2011) Icarus 211, 1066-1081. doi:10.1016/j.icarus.2010.10.030
+  - NASA/JPL NAIF SPICE Toolkit and generic kernels
+  - JPL Horizons System

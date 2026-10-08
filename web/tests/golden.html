@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Engine golden test</title>
+<style>body{font:14px/1.4 ui-monospace,Consolas,monospace;margin:20px;background:#fff;color:#111}.pass{color:#1d7a46}.fail{color:#b3261e}</style></head>
+<body>
+<h1>engine.js vs pipeline solver.py</h1>
+<pre id="out">running…</pre>
+<script type="module">
+import { windowMetrics, evaluate, minimalRelaxation, evaluateWindowRuns, sensitivity, thresholdCurve } from "../engine.js";
+import { fetchBin } from "../io.js";
+const out = document.getElementById("out");
+const log = (s) => (out.textContent += s + "\n");
+out.textContent = "";
+const meta = await (await fetch("../data/sites.json")).json();
+const golden = await (await fetch("../data/golden.json")).json();
+const n = meta.grid.n, nh = meta.heights_m.length;
+const bins = {};
+for (const s of meta.sites) bins[s.id] = new Uint8Array(await fetchBin(`../data/site_${s.id}.bin`));
+let worst = 0, mism = 0, cases = 0;
+for (const g of golden) {
+  const tables = evaluate(meta.sites.map((s) => {
+    const u8 = bins[s.id];
+    const f = Float32Array.from(u8.subarray(g.height_index * n, (g.height_index + 1) * n), (v) => v / meta.f_scale);
+    const dte = u8.subarray((nh + g.height_index) * n, (nh + g.height_index + 1) * n).map((v) => v & 1);
+    return windowMetrics({ id: s.id, dtS: meta.grid.step_s, f, dte }, g.req, 1);
+  }), g.req);
+  const rel = minimalRelaxation(tables, g.req);
+  for (const [k, gs] of tables.map((t, i) => [t, g.sites[i]])) {
+    if (k.starts.length !== gs.n) { mism++; log(`count mismatch ${gs.id}`); }
+    const feas = k.feasible.reduce((a, b) => a + b, 0);
+    if (feas !== gs.feasible) { mism++; log(`feasible mismatch ${gs.id}: ${feas} vs ${gs.feasible}`); }
+    for (const m of Object.keys(gs.sample)) gs.sample[m].forEach((v, j) => { const d = Math.abs(k.metrics[m][j * 97] - v); if (d > worst) worst = d; });
+  }
+  for (const [key, v] of Object.entries(g.relax)) {
+    const js = rel[key]?.relaxedTo ?? null;
+    if ((v === null) !== (js === null) || (v !== null && Math.abs(js - v) > 1e-6)) { mism++; log(`relax mismatch ${key}: ${js} vs ${v}`); }
+  }
+  // fast what-if curve must equal the reference sensitivity() exactly
+  for (const [key, vals] of [["sun", [0, 40, 70, 90]], ["dte", [10, 50, 80]], ["blackout", [0, 24, 120, 240]], ["shadow", [0, 48, 120]]]) {
+    const a = thresholdCurve(tables, g.req, key, vals), b = sensitivity(tables, g.req, key, vals).map((r) => r.windows);
+    if (a.some((x, i) => x !== b[i])) { mism++; log(`what-if curve mismatch ${key}: ${a} vs ${b}`); }
+  }
+  cases++;
+}
+// dispersion centre point (offset 0) must reproduce the main series exactly (link, blackout, darkness)
+let dWorst = 0, dSun = 0, dChecked = 0;
+for (const s of meta.sites) {
+  if (!s.dispersion) continue;
+  const u8 = bins[s.id], db = new Uint8Array(await fetchBin(`../data/disp_${s.id}.bin`));
+  const step = s.dispersion.step_samples, nhr = Math.ceil(n / step);
+  const f = Float32Array.from(u8.subarray(0, n), (v) => v / meta.f_scale), dte = u8.subarray(nh * n, (nh + 1) * n).map((v) => v & 1);
+  const req = { durationH: 168, minSunPct: 0, minDtePct: 0, maxBlackoutH: 1e9, maxShadowH: 1e9, litThreshold: 0.5 };
+  const t = windowMetrics({ id: s.id, dtS: meta.grid.step_s, f, dte }, req, 1);
+  const fh = Float32Array.from(db.subarray(0, nhr), (v) => v / meta.f_scale);
+  const r0 = s.dispersion.runs[0][0];
+  for (let i = 0; i < t.starts.length; i += 53) {
+    const r = evaluateWindowRuns(fh, step, r0.on, r0.dark, t.starts[i], t.L, req, 6);
+    for (const k of ["dte", "blackout", "shadow"]) dWorst = Math.max(dWorst, Math.abs(r.metrics[k] - t.metrics[k][i]));
+    dSun = Math.max(dSun, Math.abs(r.metrics.sun - t.metrics.sun[i]));
+    dChecked++;
+  }
+}
+log(`dispersion centre vs main series: ${dChecked} windows · max link/blackout/darkness diff ${dWorst.toExponential(2)} · max sunlight diff ${dSun.toFixed(2)} pp (hourly average)`);
+if (dWorst > 1e-9 || dSun > 2) mism++;
+const ok = mism === 0 && worst < 1e-6;
+log(`${cases} cases × ${meta.sites.length} sites · max metric difference ${worst.toExponential(2)} · mismatches ${mism}`);
+log(ok ? "PASS" : "FAIL");
+out.className = ok ? "pass" : "fail";
+document.title = ok ? "PASS" : "FAIL";
+</script>
+</body>
+</html>

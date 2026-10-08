@@ -1,0 +1,54 @@
+[
+  {
+    "id": "malapert",
+    "name": "Malapert Massif (max published illumination in PGDA Site23 tile)",
+    "lat": -86.0011419884911,
+    "lon": 2.055017377349379,
+    "region": "Malapert Massif",
+    "clones": "Site23",
+    "x_m": 4350.0,
+    "y_m": 121230.0,
+    "published_avg_sun": 0.8189199999956784,
+    "published_avg_earth": 0.5869999999954413,
+    "source": "Rule D-020: argmax of PGDA AVGVISIB_85S_060M_201608 within PGDA LOLA_5mpp Site23 footprint minus 1 km"
+  },
+  {
+    "id": "nobile-rim-1",
+    "name": "Nobile Rim 1 (max published illumination in PGDA Site06 tile)",
+    "lat": -85.30028245695007,
+    "lon": 37.09893488804027,
+    "region": "Nobile Rim 1",
+    "clones": "Site06",
+    "x_m": 86010.0,
+    "y_m": 113730.0,
+    "published_avg_sun": 0.8314799999992059,
+    "published_avg_earth": 0.5988399999996056,
+    "source": "Rule D-020: argmax of PGDA AVGVISIB_85S_060M_201608 within PGDA LOLA_5mpp Site06 footprint minus 1 km"
+  },
+  {
+    "id": "nobile-rim-2",
+    "name": "Nobile Rim 2 (max published illumination in PGDA DM2 tile)",
+    "lat": -84.13651928739266,
+    "lon": 57.936257250399606,
+    "region": "Nobile Rim 2",
+    "clones": "DM2",
+    "x_m": 150810.0,
+    "y_m": 94470.0,
+    "published_avg_sun": 0.5269599999996367,
+    "published_avg_earth": 0.6282799999998159,
+    "source": "Rule D-020: argmax of PGDA AVGVISIB_85S_060M_201608 within PGDA LOLA_5mpp DM2 footprint minus 1 km"
+  },
+  {
+    "id": "haworth",
+    "name": "Haworth (max published illumination in PGDA Haworth tile)",
+    "lat": -86.36851423413322,
+    "lon": -23.276449127628595,
+    "region": "Haworth",
+    "clones": "Haworth",
+    "x_m": -43530.0,
+    "y_m": 101190.0,
+    "published_avg_sun": 0.7048799999998899,
+    "published_avg_earth": 0.6010400000000521,
+    "source": "Rule D-020: argmax of PGDA AVGVISIB_85S_060M_201608 within PGDA LOLA_5mpp Haworth footprint minus 1 km"
+  }
+]

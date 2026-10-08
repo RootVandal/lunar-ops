@@ -1,0 +1,8 @@
+data/raw/
+data/derived/
+*.part
+__pycache__/
+.pytest_cache/
+*.pyc
+web/data/*.bin
+private/

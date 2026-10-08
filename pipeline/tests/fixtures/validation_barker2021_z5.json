@@ -1,0 +1,19 @@
+{
+  "site": "connecting-ridge-roi4",
+  "z_m": 5,
+  "period": "2024-01-01..2026-01-01",
+  "our_avg_pct": 88.85,
+  "our_lcsp_days": 3.75,
+  "our_lcip_days": 206.71,
+  "published": {
+    "A": 88.12,
+    "lcsp99_days": 4.0
+  },
+  "criteria": {
+    "avg": [
+      85.0,
+      97.0
+    ],
+    "lcsp_days_max": 6.0
+  }
+}

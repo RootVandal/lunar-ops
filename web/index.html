@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>LUNAR//OPS — CLPS mission window finder</title>
+  <meta name="description" content="Decision support for CLPS lunar south-pole missions: where and when can a mission operate, why sites fail, and how robust the answer is. Built on NASA LOLA terrain and NAIF SPICE.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@600;800;900&family=Overpass:ital,wght@0,400;0,600;0,700;1,400&family=Overpass+Mono:wght@400;600&display=swap">
+  <link rel="stylesheet" href="styles.css">
+  <meta name="theme-color" content="#07173F">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="LUNAR//OPS — where and when can a CLPS lander work at the lunar south pole?">
+  <meta property="og:description" content="Requirements in; feasible sites and landing dates out, why the rest fail, the smallest change that helps, and how robust the answer is. NASA LOLA terrain, NAIF SPICE, validated against JPL Horizons and NASA GSFC.">
+  <meta property="og:image" content="https://rootvandal.github.io/lunar-ops/og.png">
+  <meta property="og:url" content="https://rootvandal.github.io/lunar-ops/">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%2307173F'/%3E%3Ccircle cx='16' cy='16' r='10' fill='none' stroke='%232E96F5' stroke-width='2'/%3E%3Cpath d='M11 23 L16 9 M16 23 L21 9' stroke='%23EAFE07' stroke-width='2.6' stroke-linecap='round'/%3E%3C/svg%3E">
+  <script type="importmap">{"imports": {"three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
+</head>
+<body>
+  <header class="top">
+    <div class="brand">
+      <span class="logo">LUNAR<b>//</b>OPS</span>
+      <span class="tag"><span>CLPS Lunar Mission Browser</span><span>South pole · 2027–2028</span></span>
+    </div>
+    <nav class="modes" role="tablist" aria-label="Mode">
+      <button role="tab" aria-selected="true" data-mode="plan">Plan a mission</button>
+      <button role="tab" aria-selected="false" data-mode="explain">Plain-language mode</button>
+      <button type="button" id="tour-start" class="tour-btn">▶ Guided demo</button>
+      <a href="#methods" class="methods-link">Methods &amp; evidence</a>
+    </nav>
+  </header>
+
+  <nav class="journey" aria-label="Decision steps">
+    <a href="#req-h"><i>01</i>Define</a><a href="#map-h"><i>02</i>Find</a><a href="#cmp-h"><i>03</i>Compare</a><a href="#ev-h"><i>04</i>Understand</a><a href="#ev-h" data-rob><i>05</i>Robustness</a><a href="#tl-h"><i>06</i>Explore</a>
+  </nav>
+
+  <main class="layout">
+    <aside class="panel req" aria-labelledby="req-h">
+      <h2 id="req-h"><i class="idx">01</i>Mission requirements</h2>
+      <form id="req" autocomplete="off">
+        <label class="field">
+          <span>Surface mission length <output data-for="durationD"></output></span>
+          <input type="range" name="durationD" min="1" max="60" step="1" value="7">
+        </label>
+        <fieldset>
+          <legend>Power</legend>
+          <label class="field">
+            <span>Min. average sunlight on panels <output data-for="minSunPct"></output></span>
+            <input type="range" name="minSunPct" min="0" max="100" step="1" value="70">
+          <canvas class="spark" data-k="sun" height="26" aria-hidden="true"></canvas>
+          </label>
+          <label class="field check">
+            <input type="checkbox" name="useShadow"> <span>Limit longest darkness <output data-for="maxShadowH"></output></span>
+          </label>
+          <input type="range" name="maxShadowH" min="0" max="120" step="1" value="48" aria-label="Longest darkness, hours">
+          <canvas class="spark" data-k="shadow" height="26" aria-hidden="true"></canvas>
+          <label class="field">
+            <span>Panel &amp; antenna height</span>
+            <select name="heightM">
+              <option value="1">1 m (low mount)</option>
+              <option value="5">5 m (mast)</option>
+            </select>
+          </label>
+        </fieldset>
+        <fieldset>
+          <legend>Direct-to-Earth link</legend>
+          <label class="field">
+            <span>Min. time with DTE link <output data-for="minDtePct"></output></span>
+            <input type="range" name="minDtePct" min="0" max="100" step="1" value="50">
+          <canvas class="spark" data-k="dte" height="26" aria-hidden="true"></canvas>
+          </label>
+          <label class="field">
+            <span>Max. continuous blackout <output data-for="maxBlackoutH"></output></span>
+            <input type="range" name="maxBlackoutH" min="0" max="240" step="1" value="24">
+          <canvas class="spark" data-k="blackout" height="26" aria-hidden="true"></canvas>
+          </label>
+        </fieldset>
+        <p class="hint spark-hint">Under each slider: how many landing hours (all sites, 2027–2028) would pass at each setting, every other requirement held. The yellow tick is the current setting.</p>
+        <p class="hint" id="assumptions-hint">DTE = lander sees a DSN antenna (Goldstone, Canberra, Madrid) above lunar terrain <em>and</em> that antenna sees the Moon ≥ 6°. Geometry only — no scheduling or link budget.</p>
+      </form>
+    </aside>
+
+    <section class="results" aria-live="polite">
+      <section class="card explain-only" aria-labelledby="why-h">
+        <header class="card-h"><h2 id="why-h">Why landing at the lunar south pole is hard</h2></header>
+        <div class="plain">
+          <p><b>The Sun never climbs.</b> At the pole it stays within 1.6° of the horizon all year; 160 km away (where IM-2 landed) it never rises above 6.8°. It circles around the sky once a month instead of crossing it.</p>
+          <p><b>So hills decide everything.</b> A ridge a few hundred metres high can hide that low Sun for days. But a lander on a peak can see the Sun even when it is “below the horizon”, because from up high the horizon drops.</p>
+          <p><b>Earth wobbles.</b> Earth hangs almost still in the lunar sky, but it bobs up and down by about ±7° every four weeks (libration). Near the pole it disappears below the horizon for up to 15 days — no direct radio link home.</p>
+          <p><b>The date matters as much as the place.</b> Sunlight follows a 29.5-day cycle and Earth a 27-day one, so the times when both are up drift from month to month. This tool checks every landing date in 2027–2028.</p>
+          <p class="hint">Numbers measured with NASA JPL Horizons and NASA LOLA terrain; see Methods &amp; evidence.</p>
+        </div>
+      </section>
+      <section class="intro" id="intro" aria-label="What this is">
+        <p><b>Where and when can a lunar lander work at the south pole?</b> Set what your mission needs on the left. LUNAR//OPS checks every landing hour of 2027–2028 at six candidate sites against NASA terrain and the Deep Space Network, and answers <span class="go-word">GO</span> or <span class="no-word">NO-GO</span> — with the evidence, the smallest change that would help, and how robust the answer is.</p>
+        <div class="intro-actions"><button type="button" class="tour-btn" id="intro-demo">▶ 2-minute guided demo</button><button type="button" class="btn" id="intro-close" aria-label="Hide this introduction">Hide</button></div>
+      </section>
+      <section class="status" aria-label="Mission status">
+        <div id="verdict" class="verdict"></div>
+        <figure class="locator"><canvas id="locator" width="220" height="220" aria-label="South polar map of the six candidate sites"></canvas><figcaption>Sites on the south polar stereographic grid · rings every 1° of latitude</figcaption></figure>
+      </section>
+
+      <section class="card" aria-labelledby="map-h">
+        <header class="card-h">
+          <h2 id="map-h"><i class="idx">02</i>Where + when · every landing day 2027–2028</h2>
+          <div class="legend" id="map-legend"></div>
+        </header>
+        <div class="map-wrap"><p class="sr-only" id="map-summary" aria-live="polite"></p><canvas id="map" height="260" tabindex="0" role="grid" aria-label="Site by date feasibility map. Arrow keys move between sites and days."></canvas><div id="map-tip" class="tip" hidden></div></div>
+        <p class="plain explain-only">Read it like a calendar: each row is a place, each column a landing day. Yellow days work for this mission. Stripes appear because sunlight and Earth come and go on different monthly cycles.</p>
+        <p class="hint">Each cell is the best mission that lands on that day. Bright yellow passes every requirement and still passes at ≥ 90 % of points within 250 m; dim yellow passes only at the exact target; other colours name the requirement that fails. Click a cell to inspect it.</p>
+      </section>
+
+      <section class="card" aria-labelledby="cmp-h">
+        <header class="card-h"><h2 id="cmp-h"><i class="idx">03</i>Compare sites · same landing time</h2><span id="cmp-sub" class="sub"></span></header>
+        <div id="compare" class="cmp-wrap"></div>
+        <p class="plain explain-only">Same mission, same day, six places. Red numbers are the ones that break the mission at that place.</p>
+      </section>
+
+      <div class="grid2">
+        <section class="card" aria-labelledby="ev-h">
+          <header class="card-h"><h2 id="ev-h"><i class="idx">04</i>Evidence · why it passes or fails</h2><span id="ev-sub" class="sub"></span>
+            <button type="button" class="btn brief-btn" id="brief" title="Printable one-page brief of this landing window (save as PDF from the print dialog)">⎙ Mission brief</button></header>
+          <div id="evidence"></div>
+        </section>
+        <section class="card" aria-labelledby="tr-h">
+          <header class="card-h"><h2 id="tr-h">Trade-off · sunlight vs Earth link</h2></header>
+          <canvas id="pareto" height="260" aria-label="Best window per site: solar availability against DTE availability"></canvas>
+          <ol class="pareto-legend" id="pareto-legend"></ol>
+          <p class="hint" id="pareto-hint"></p>
+        </section>
+      </div>
+
+      <section class="card" aria-labelledby="tl-h">
+        <header class="card-h"><h2 id="tl-h"><i class="idx">06</i>Mission timeline</h2><span id="tl-sub" class="sub"></span>
+          <div class="tl-ctrl"><button id="ev-prev" type="button" aria-label="Previous event" title="Previous event">⏮</button><button id="play" type="button" aria-label="Play">▶</button><button id="ev-next" type="button" aria-label="Next event" title="Next event">⏭</button><input id="scrub" type="range" min="0" max="1000" value="0" aria-label="Time in mission"></div>
+        </header>
+        <canvas id="timeline" height="196" aria-label="Sun, Earth above skyline, DTE link and darkness over the mission; triangles mark events"></canvas>
+        <div id="now" class="now"></div>
+        <p class="plain explain-only">Press play to run the mission. Gold = how much of the Sun the solar panels see. Light blue = Earth is above the hills; dark blue = a radio link to a NASA Deep Space Network antenna is possible. Yellow = sunlight and link at once — the useful working time. The small triangles mark sunrises, Earthsets and link changes; ⏮ ⏭ jump between them.</p>
+      </section>
+
+      <section class="card" aria-labelledby="hz-h">
+        <header class="card-h"><h2 id="hz-h">Skyline from the lander</h2><span id="hz-sub" class="sub"></span></header>
+        <canvas id="horizon" height="240" aria-label="Terrain skyline with the paths of the Sun and Earth"></canvas>
+        <div id="hz-stats" class="hz-stats"></div>
+        <p class="plain explain-only">This is the view all around the lander, flattened into a strip: north on the left, then east, south, west. The filled shape is the real mountain skyline measured by NASA's laser altimeter. Watch the Sun slide sideways along the skyline and Earth bob up and down.</p>
+        <p class="hint">Filled: the real skyline computed from NASA LOLA terrain. Dashed line: the mathematical horizon (0°). A body below the dashed line can still be visible from a peak; a body above it can still be hidden by a ridge.</p>
+      </section>
+
+      <section class="card" id="card3d" aria-labelledby="v3-h">
+        <header class="card-h"><h2 id="v3-h">Terrain around the site · 3D</h2><span id="v3-sub" class="sub"></span>
+          <div class="v3-ctrl" role="group" aria-label="Camera"><button type="button" class="btn" data-view="over" aria-pressed="true">Overview</button><button type="button" class="btn" data-view="lander" aria-pressed="false">Lander’s eye, facing the Sun</button></div>
+        </header>
+        <div id="view3d" class="view3d" aria-label="3D terrain view; drag to rotate, scroll to zoom"><p class="hint">The 3D view loads when you scroll here.</p></div>
+        <p class="hint">8 × 8 km of NASA LOLA terrain at true vertical scale, lit by the Sun at the timeline cursor. The thin line is the engine’s skyline from 300 km of terrain, drawn as a ring at the patch edge: the Sun and Earth markers sit at their real elevation angles, so a marker below the line is hidden (true size in the lander’s view, 4× in the overview). Pins: the 19 landing points, yellow where the selected window still passes, red where it fails. Illustration only — local cast shadows are not simulated and no result is computed here.</p>
+        <p class="plain explain-only">This is the real shape of the ground around the landing spot. Spin it with the mouse. The pins show where else the lander could end up if it misses its target by up to 250 m — red pins are spots where the mission would not work.</p>
+      </section>
+
+      <section class="card" id="methods" aria-labelledby="me-h">
+        <header class="card-h"><h2 id="me-h">Methods &amp; validation</h2></header>
+        <div id="methods-body"></div>
+      </section>
+    </section>
+  </main>
+
+  <div id="tour" class="tour" role="dialog" aria-live="polite" aria-label="Guided demo" hidden>
+    <div class="tour-step" id="tour-step"></div>
+    <div class="tour-text" id="tour-text"></div>
+    <div class="tour-nav"><button type="button" id="tour-prev">Back</button><button type="button" id="tour-next">Next</button><button type="button" id="tour-close" aria-label="Close demo">✕</button></div>
+  </div>
+
+  <footer class="foot">
+    <b>LUNAR//OPS</b> · Independent open-source planning and education prototype (October 2026) on the topic of the NASA Space Apps 2026 challenge “CLPS Lunar Mission Browser”; not a hackathon submission. Source and methods: <a href="https://github.com/RootVandal/lunar-ops">github.com/RootVandal/lunar-ops</a>. Uses open NASA/JPL data (LRO LOLA via NASA GSFC PGDA, NAIF SPICE, JPL Horizons). Not a NASA product, not endorsed by NASA, not for flight operations.
+  </footer>
+  <noscript><p class="noscript">LUNAR//OPS runs entirely in your browser and needs JavaScript. The methods and validation are in the repository's <code>docs/</code>.</p></noscript>
+  <script type="module" src="app.js"></script>
+</body>
+</html>

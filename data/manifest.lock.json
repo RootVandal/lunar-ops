@@ -1,0 +1,58 @@
+{
+  "fk_moon": {
+    "last_modified": "Wed, 16 Apr 2025 12:47:17 GMT",
+    "pinned_utc": "2026-10-08T15:42:38Z",
+    "sha256": "a47c71e9c9f33796bdafb2c9d69a7ee447b6016ecad80f71cd6f3e479f9cf768",
+    "size": 19478,
+    "url": "https://naif.jpl.nasa.gov/pub/naif/generic_kernels/fk/satellites/moon_de440_250416.tf"
+  },
+  "fk_stations": {
+    "last_modified": "Sat, 15 Aug 2026 00:23:45 GMT",
+    "pinned_utc": "2026-10-08T15:44:55Z",
+    "sha256": "4f40cd1e86718047bc8ea6ff6bd063c9fbf36102b63f0dca370c8e94fd282490",
+    "size": 69400,
+    "url": "https://naif.jpl.nasa.gov/pub/naif/generic_kernels/fk/stations/earth_topo_260814.tf"
+  },
+  "lsk": {
+    "last_modified": "Fri, 15 Jul 2016 00:00:37 GMT",
+    "pinned_utc": "2026-10-08T15:34:39Z",
+    "sha256": "678e32bdb5a744117a467cd9601cd6b373f0e9bc9bbde1371d5eee39600a039b",
+    "size": 5257,
+    "url": "https://naif.jpl.nasa.gov/pub/naif/generic_kernels/lsk/naif0012.tls"
+  },
+  "pck_earth": {
+    "last_modified": "Sat, 08 Aug 2026 15:05:07 GMT",
+    "pinned_utc": "2026-10-08T15:44:52Z",
+    "sha256": "cc87ad1a495cf598800ba403763d350f087ac0b97da9fec603278a3864c6a53e",
+    "size": 31318016,
+    "url": "https://naif.jpl.nasa.gov/pub/naif/generic_kernels/pck/earth_1962_260806_2126_combined.bpc"
+  },
+  "pck_moon_pa": {
+    "last_modified": "Sat, 26 Jun 2021 01:49:57 GMT",
+    "pinned_utc": "2026-10-08T15:42:37Z",
+    "sha256": "60cd55aa401ea2ea97360636f567554bfe4e37bb829f901b4460a455dfaf783f",
+    "size": 12863488,
+    "url": "https://naif.jpl.nasa.gov/pub/naif/generic_kernels/pck/moon_pa_de440_200625.bpc"
+  },
+  "pck_text": {
+    "last_modified": "Tue, 27 Dec 2022 16:28:50 GMT",
+    "pinned_utc": "2026-10-08T15:42:42Z",
+    "sha256": "3dff7b1dbeceaa01f25467767d3fa25816051c85d162d1edf04acb310ee28bb1",
+    "size": 131226,
+    "url": "https://naif.jpl.nasa.gov/pub/naif/generic_kernels/pck/pck00011.tpc"
+  },
+  "spk_de440s": {
+    "last_modified": "Mon, 21 Dec 2020 19:39:26 GMT",
+    "pinned_utc": "2026-10-08T15:40:32Z",
+    "sha256": "c1c7feeab882263fc493a9d5a5b2ddd71b54826cdf65d8d17a76126b260a49f2",
+    "size": 32726016,
+    "url": "https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/planets/de440s.bsp"
+  },
+  "spk_stations": {
+    "last_modified": "Fri, 14 Aug 2026 22:50:08 GMT",
+    "pinned_utc": "2026-10-08T15:44:54Z",
+    "sha256": "007eb0aad5dd022c6d61bdbfb2395680bd1eb31c49a8637d0b0a1cfbea737c6b",
+    "size": 26624,
+    "url": "https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/stations/earthstns_itrf93_260814.bsp"
+  }
+}

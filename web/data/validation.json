@@ -1,0 +1,67 @@
+{
+ "checks": [
+  {
+   "check": "Sun azimuth/elevation at the IM-2 site, 8761 hourly samples (Nov 2026 - Nov 2027)",
+   "reference": "JPL Horizons API (DE441), observer coord@301",
+   "result": "max error 6.2e-07 deg",
+   "criterion": "< 1e-2 deg",
+   "status": "PASS"
+  },
+  {
+   "check": "Earth azimuth/elevation at the IM-2 site, 8761 hourly samples (Nov 2026 - Nov 2027)",
+   "reference": "JPL Horizons API (DE441), observer coord@301",
+   "result": "max error 2.7e-05 deg",
+   "criterion": "< 1e-2 deg",
+   "status": "PASS"
+  },
+  {
+   "check": "Connecting Ridge RoI 4, 2024-2026, panels 5 m",
+   "reference": "Barker et al. 2021 Table 2, RoI 4, z=5 m: 1st percentile 88.12% over 100 clones, longest shadow 4.0 d (99th pct)",
+   "result": "88.85% average illumination, longest shadow 3.75 d",
+   "criterion": "85.0-97.0%, shadow <= 6.0 d",
+   "status": "PASS"
+  },
+  {
+   "check": "Connecting Ridge RoI 4, 2024-2026, panels 1 m",
+   "reference": "Barker et al. 2021 Table 2, RoI 4, z=1 m: 1st percentile 69.61% over 100 clones (range 52.19-86.81%)",
+   "result": "82.22% average illumination, longest shadow 6.54 d",
+   "criterion": "52.0-95.0%",
+   "status": "PASS"
+  },
+  {
+   "check": "Average sunlight at 4 rule-selected sites, panels 1 m (2027-2028)",
+   "reference": "PGDA AVGVISIB_85S_060M (Mazarico et al.; 18.6-year average, different period)",
+   "result": "malapert: 74.5% vs 81.9%; nobile-rim-1: 82.4% vs 83.1%; nobile-rim-2: 51.3% vs 52.7%; haworth: 69.1% vs 70.5%; mean |diff| 2.7 pp; same ranking: True",
+   "criterion": "same ranking, mean |diff| < 5 pp (set after first look: indicative only)",
+   "status": "PASS"
+  },
+  {
+   "check": "Earth link vs published Earth visibility, same sites",
+   "reference": "PGDA AVGVISIB_..._EARTH (any part of Earth's disc visible)",
+   "result": "malapert: 55.6% vs 58.7%; nobile-rim-1: 58.8% vs 59.9%; nobile-rim-2: 60.4% vs 62.8%; haworth: 57.8% vs 60.1%",
+   "criterion": "ours not higher, since our rule is stricter (set after first look: indicative only)",
+   "status": "PASS"
+  },
+  {
+   "check": "DEM-error ensemble (NASA clones), Connecting Ridge RoI 4, 2024-2026, panels 5 m",
+   "reference": "Barker et al. 2021 Table 2, RoI 4, z=5 m, 100 clones: 1st pct 88.12%, longest shadow 99th pct 4.00 d",
+   "result": "1st pct 88.32%, 99th pct longest shadow 3.75 d over 20 clones",
+   "criterion": "|p1 - 88.12| <= 3 pp and |p99 - 4.00 d| <= 1.5 d (fixed before processing, D-024)",
+   "status": "PASS"
+  },
+  {
+   "check": "DEM-error ensemble (NASA clones), Connecting Ridge RoI 4, 2024-2026, panels 1 m",
+   "reference": "Barker et al. 2021 Table 2, RoI 4, z=1 m, 100 clones: 1st pct 69.61% (range 52.19-86.81%)",
+   "result": "1st pct 67.36% over 20 clones",
+   "criterion": "52.19% <= p1 <= 86.81% (fixed before processing, D-024)",
+   "status": "PASS"
+  },
+  {
+   "check": "Horizon resolution test: 30-100 km and 100-300 km layers coarsened 2x (160->320 m, 480->960 m), Connecting Ridge",
+   "reference": "same pipeline",
+   "result": "max change 0.017 deg",
+   "criterion": "< 0.05 deg",
+   "status": "PASS"
+  }
+ ]
+}
